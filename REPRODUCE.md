@@ -8,7 +8,7 @@ This runbook recreates the environment that successfully ran the official
 | Item | Verified value |
 | --- | --- |
 | RunPod template | `mzav9rhpen` |
-| Image | `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.1@sha256:93cfe3bca0582a50517de95e5d090524f341ceaf6f3d495adc56e73a4ff67a36` |
+| Image | `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.2@sha256:06ccef7c0797b550a3fbb1809adc7648a39c6188890bcd22d41c208231558c7a` |
 | GPU | NVIDIA A100-SXM4-80GB |
 | Host CUDA / driver | 13.0 / 580.159.04 |
 | Network Volume | `n7h9tqohhb`, EUR-IS-1, mounted at `/workspace` |
@@ -38,7 +38,7 @@ roughly another 30GB. A 100GB or larger Volume is recommended.
 The account template `mzav9rhpen` is already configured as follows:
 
 ```text
-Name: Qwen Image 2.1 Official BF16 ComfyUI + Diffusers 0.1.1
+Name: Qwen Image 2.1 Official BF16 ComfyUI + Diffusers 0.1.2
 Container disk: 40GB
 Ports: 8188/http, 22/tcp
 Allowed host CUDA: 13.0, 13.2
@@ -52,6 +52,11 @@ QWEN_MODEL_AUTO_DOWNLOAD=1
 For another account, create a private template with the same immutable image,
 ports, disk size, environment, and CUDA versions. Select the Network Volume
 when deploying the Pod; it is intentionally not embedded in the template.
+
+Image 0.1.2 is a file-only layer over the fully exercised 0.1.1 runtime. It adds
+the 16:9 test script and ComfyUI preset. The build and workflow verifier passed
+in GitHub Actions run `35781843337`; runtime dependencies are inherited
+unchanged from 0.1.1.
 
 ## 3. Create the Pod
 
@@ -89,7 +94,7 @@ The entrypoint performs these steps:
    `/workspace/qwen-image-2.1-bf16/logs/preflight-*.txt`.
 3. Downloads exactly the three pinned Comfy-Org BF16 files and symlinks them
    into dedicated ComfyUI model directories.
-4. Copies the three manual workflows into the user's Workflows directory.
+4. Copies the four manual workflows into the user's Workflows directory.
 5. Starts ComfyUI on `0.0.0.0:8188`.
 
 Readiness is complete only when both conditions pass:

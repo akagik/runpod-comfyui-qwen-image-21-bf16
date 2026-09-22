@@ -15,10 +15,13 @@ separate. It contains no model weights, quantization, LoRA, or custom ComfyUI no
 
 ## Pod template
 
-Template: `mzav9rhpen` (`Qwen Image 2.1 Official BF16 ComfyUI + Diffusers 0.1.1`).
-Image: `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.1@sha256:93cfe3bca0582a50517de95e5d090524f341ceaf6f3d495adc56e73a4ff67a36`.
+Template: `mzav9rhpen` (`Qwen Image 2.1 Official BF16 ComfyUI + Diffusers 0.1.2`).
+Image: `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.2@sha256:06ccef7c0797b550a3fbb1809adc7648a39c6188890bcd22d41c208231558c7a`.
 `Dockerfile` builds the full 0.1.0 image; `Dockerfile.patch` pins that verified digest
 and adds the 0.1.1 persistent-volume guard without reinstalling dependencies.
+`Dockerfile.novel` pins the verified 0.1.1 image and adds only the tested 16:9
+script and ComfyUI preset. It does not change the CUDA, Python, PyTorch,
+Diffusers, ComfyUI, or model bootstrap layers.
 Container disk: 40 GB. Ports: `8188/http`, `22/tcp`. Persistent network volume mount: `/workspace`.
 Environment: `MODE_TO_RUN=pod`, `RUNPOD_VOLUME_ROOT=/workspace`, `QWEN_MODEL_AUTO_DOWNLOAD=1`.
 Allowed host CUDA versions: 13.0 and 13.2. The full baseline was verified on an
