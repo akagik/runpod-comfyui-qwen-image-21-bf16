@@ -1,0 +1,6 @@
+qwen_image_21_bf16:
+  base_path: /workspace/qwen-image-2.1-bf16/comfy-models
+  diffusion_models: diffusion_models/
+  text_encoders: text_encoders/
+  vae: vae/
+

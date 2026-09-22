@@ -1,0 +1,9 @@
+.git
+.github
+*.safetensors
+*.ckpt
+*.gguf
+__pycache__
+*.pyc
+.venv
+outputs
