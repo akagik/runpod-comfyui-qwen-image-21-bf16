@@ -15,7 +15,8 @@ separate. It contains no model weights, quantization, LoRA, or custom ComfyUI no
 
 ## Pod template
 
-Image: `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.1` (use the published digest).
+Template: `mzav9rhpen` (`Qwen Image 2.1 Official BF16 ComfyUI + Diffusers 0.1.1`).
+Image: `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.1@sha256:93cfe3bca0582a50517de95e5d090524f341ceaf6f3d495adc56e73a4ff67a36`.
 `Dockerfile` builds the full 0.1.0 image; `Dockerfile.patch` pins that verified digest
 and adds the 0.1.1 persistent-volume guard without reinstalling dependencies.
 Container disk: 40 GB. Ports: `8188/http`, `22/tcp`. Persistent network volume mount: `/workspace`.
