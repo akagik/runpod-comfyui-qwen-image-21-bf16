@@ -7,6 +7,7 @@ on:
     paths:
       - Dockerfile
       - Dockerfile.patch
+      - Dockerfile.novel
       - config/**
       - scripts/**
       - workflows/**
@@ -43,12 +44,12 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.patch
+          file: ./Dockerfile.novel
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.1
+          tags: ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.2
           cache-from: type=gha
           provenance: mode=max
           sbom: true
       - name: Record image digest
-        run: echo 'ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.1@${{ steps.build.outputs.digest }}' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.2@${{ steps.build.outputs.digest }}' >> "$GITHUB_STEP_SUMMARY"

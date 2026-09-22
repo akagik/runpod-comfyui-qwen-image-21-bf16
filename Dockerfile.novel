@@ -1,0 +1,11 @@
+# syntax=docker/dockerfile:1.7
+# Add the verified 16:9 novel-game preset without changing the BF16 runtime.
+FROM ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.1@sha256:93cfe3bca0582a50517de95e5d090524f341ceaf6f3d495adc56e73a4ff67a36
+LABEL org.opencontainers.image.version="0.1.2"
+COPY --chmod=644 workflows/gui/qwen21_bf16_novel_game_16x9_40step.json /opt/qwen-image-21-bf16/workflows/gui/
+COPY --chmod=755 scripts/test_novel_game_16x9.py /opt/qwen-image-21-bf16/scripts/
+COPY --chmod=755 scripts/verify_workflows.py /opt/qwen-image-21-bf16/scripts/
+RUN /opt/comfyui-venv/bin/python -m py_compile \
+      /opt/qwen-image-21-bf16/scripts/test_novel_game_16x9.py \
+    && /opt/comfyui-venv/bin/python \
+      /opt/qwen-image-21-bf16/scripts/verify_workflows.py

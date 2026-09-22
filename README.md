@@ -21,7 +21,11 @@ Image: `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.1@sha256:93cfe3bca0
 and adds the 0.1.1 persistent-volume guard without reinstalling dependencies.
 Container disk: 40 GB. Ports: `8188/http`, `22/tcp`. Persistent network volume mount: `/workspace`.
 Environment: `MODE_TO_RUN=pod`, `RUNPOD_VOLUME_ROOT=/workspace`, `QWEN_MODEL_AUTO_DOWNLOAD=1`.
-Use a GPU with BF16 support and enough VRAM for a complete GPU load, such as H200 141 GB.
+Allowed host CUDA versions: 13.0 and 13.2. The full baseline was verified on an
+A100 SXM 80GB; use a BF16-capable GPU with sufficient VRAM.
+
+For the complete stock check, priced deployment, readiness, benchmark, ComfyUI,
+and persistence procedure, read [REPRODUCE.md](REPRODUCE.md).
 
 The entrypoint starts SSH, records `nvidia-smi`, Python, disk, RAM, and torch/CUDA in
 `/workspace/qwen-image-2.1-bf16/logs/`, downloads only the three Comfy-Org BF16 files
@@ -35,7 +39,8 @@ Open the Pod's ComfyUI proxy URL, then select one of these from **Workflows**:
 
 1. `qwen21_bf16_t2i_smoke_1024_10step.json` — 1024 square, 10 steps, seed 42.
 2. `qwen21_bf16_t2i_2048_40step.json` — 2048 square, 40 steps, seed 42, CFG 1.
-3. `qwen21_bf16_image_edit_40step.json` — 40-step two-image edit with bundled sample inputs; replace the Load Image selections to use your own files.
+3. `qwen21_bf16_novel_game_16x9_40step.json` — 2752×1536, 40 steps, seed 44, with the tested Japanese cat-cafe visual-novel prompt.
+4. `qwen21_bf16_image_edit_40step.json` — 40-step two-image edit with bundled sample inputs; replace the Load Image selections to use your own files.
 
 All three use only `qwen_image_2.1_bf16.safetensors`, `qwen3vl_8b_bf16.safetensors`,
 and `qwen_image_2.1_vae_bf16.safetensors`. The edit workflow's examples load into
@@ -62,3 +67,11 @@ No CFG, negative prompt, quantization, CPU offload, or reduced-step adapter is u
 Outputs are `outputs/diffusers/qwen21_bf16_smoke_1024.png`,
 `outputs/diffusers/qwen21_bf16_2048.png`, and
 `outputs/diffusers/qwen21_bf16_edit.png`.
+
+The verified A100 SXM 80GB result for 2048×2048 / 40 steps / seed 42 was
+78.926 seconds with 56.511 GiB peak allocated and 63.771 GiB peak reserved
+PyTorch memory. No quantization or CPU offload was used.
+
+The separate [16:9 novel-game test report](NOVEL_GAME_16X9_TEST_2026-09-23.md)
+contains three 2752×1536 / 40-step Japanese prompt variants, their timings and
+VRAM peaks, a visual review, and the matching ComfyUI preset.
