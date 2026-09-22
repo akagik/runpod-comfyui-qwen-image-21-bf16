@@ -1,0 +1,6 @@
+# syntax=docker/dockerfile:1.7
+# Thin safety patch over the verified full 0.1.0 BF16 image.
+FROM ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.0@sha256:fad9a8bca105645bdd7d47e7b6c52fa97cb5d28bcecd01e3a5eb2432bbe1880e
+LABEL org.opencontainers.image.version="0.1.1"
+COPY --chmod=755 scripts/start.sh /opt/qwen-image-21-bf16/scripts/start.sh
+RUN bash -n /opt/qwen-image-21-bf16/scripts/start.sh

@@ -15,7 +15,9 @@ separate. It contains no model weights, quantization, LoRA, or custom ComfyUI no
 
 ## Pod template
 
-Image: `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.0` (use the published digest).
+Image: `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.1` (use the published digest).
+`Dockerfile` builds the full 0.1.0 image; `Dockerfile.patch` pins that verified digest
+and adds the 0.1.1 persistent-volume guard without reinstalling dependencies.
 Container disk: 40 GB. Ports: `8188/http`, `22/tcp`. Persistent network volume mount: `/workspace`.
 Environment: `MODE_TO_RUN=pod`, `RUNPOD_VOLUME_ROOT=/workspace`, `QWEN_MODEL_AUTO_DOWNLOAD=1`.
 Use a GPU with BF16 support and enough VRAM for a complete GPU load, such as H200 141 GB.

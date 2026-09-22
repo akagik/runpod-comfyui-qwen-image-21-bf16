@@ -4,6 +4,7 @@ set -Eeuo pipefail
 [[ "${MODE_TO_RUN:-pod}" == pod ]] || { echo 'Pod mode only' >&2; exit 2; }
 volume_root="${RUNPOD_VOLUME_ROOT:-/workspace}"
 [[ -d "$volume_root" ]] || { echo "Missing volume: $volume_root" >&2; exit 3; }
+mountpoint -q "$volume_root" || { echo "Persistent volume is not mounted at $volume_root" >&2; exit 3; }
 
 if [[ -n "${PUBLIC_KEY:-}" ]]; then
   install -d -m 700 /root/.ssh
@@ -20,7 +21,12 @@ export HF_HOME="$project_dir/hf-cache"
 export HUGGINGFACE_HUB_CACHE="$HF_HOME/hub"
 
 preflight_log="$project_dir/logs/preflight-$(date -u +%Y%m%dT%H%M%SZ).txt"
-/opt/qwen-image-21-bf16/scripts/preflight.sh >"$preflight_log" 2>&1
+/opt/qwen-image-21-bf16/scripts/preflight.sh >"$preflight_log" 2>&1 || {
+  echo "Preflight failed; inspect $preflight_log" >&2
+  tail -n 10 "$preflight_log" >&2 || true
+  echo 'SSH remains available for repair.'
+  while true; do sleep 60; done
+}
 echo "Preflight: $preflight_log"
 
 bootstrap_log="$project_dir/logs/bootstrap-$(date -u +%Y%m%dT%H%M%SZ).txt"
@@ -58,4 +64,3 @@ exec /opt/comfyui-venv/bin/python -u /opt/ComfyUI-qwen21/main.py \
   --database-url "sqlite:///$project_dir/user/comfyui.db" \
   --extra-model-paths-config /opt/qwen-image-21-bf16/config/extra_model_paths.yaml \
   --cache-none --disable-pinned-memory
-
