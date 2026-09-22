@@ -63,4 +63,4 @@ exec /opt/comfyui-venv/bin/python -u /opt/ComfyUI-qwen21/main.py \
   --user-directory "$project_dir/user" \
   --database-url "sqlite:///$project_dir/user/comfyui.db" \
   --extra-model-paths-config /opt/qwen-image-21-bf16/config/extra_model_paths.yaml \
-  --cache-none --disable-pinned-memory
+  --cache-classic --disable-pinned-memory
