@@ -8,7 +8,7 @@ This runbook recreates the environment that successfully ran the official
 | Item | Verified value |
 | --- | --- |
 | RunPod template | `mzav9rhpen` |
-| Image | `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.2@sha256:06ccef7c0797b550a3fbb1809adc7648a39c6188890bcd22d41c208231558c7a` |
+| Current template image | `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.3@sha256:ec46236609a7e7ecea33904df0a043a1b529d77ad52eb8c7f0b1d1250cdc5e9b` |
 | GPU | NVIDIA A100-SXM4-80GB |
 | Host CUDA / driver | 13.0 / 580.159.04 |
 | Network Volume | `n7h9tqohhb`, EUR-IS-1, mounted at `/workspace` |
@@ -38,7 +38,7 @@ roughly another 30GB. A 100GB or larger Volume is recommended.
 The account template `mzav9rhpen` is already configured as follows:
 
 ```text
-Name: Qwen Image 2.1 Official BF16 ComfyUI + Diffusers 0.1.2
+Name: Qwen Image 2.1 Official BF16 ComfyUI + Diffusers 0.1.3 Resident
 Container disk: 40GB
 Ports: 8188/http, 22/tcp
 Allowed host CUDA: 13.0, 13.2
@@ -54,9 +54,12 @@ ports, disk size, environment, and CUDA versions. Select the Network Volume
 when deploying the Pod; it is intentionally not embedded in the template.
 
 Image 0.1.2 is a file-only layer over the fully exercised 0.1.1 runtime. It adds
-the 16:9 test script and ComfyUI preset. The build and workflow verifier passed
-in GitHub Actions run `35781843337`; runtime dependencies are inherited
-unchanged from 0.1.1.
+the 16:9 test script and ComfyUI preset. Image 0.1.3 is another thin layer over
+the immutable 0.1.2 digest and changes only `scripts/start.sh`: ComfyUI now uses
+`--cache-classic` instead of `--cache-none`, allowing loader outputs to survive
+between prompts. The linux/amd64 build, shell checks, Python checks, and workflow
+verifier passed in GitHub Actions run `35788240585`; CUDA, Python, PyTorch,
+Diffusers, ComfyUI, and model files are inherited unchanged.
 
 ## 3. Create the Pod
 
@@ -153,7 +156,7 @@ Select a workflow from **Workflows**:
 - `qwen21_bf16_novel_game_16x9_40step.json`
 - `qwen21_bf16_image_edit_40step.json`
 
-All three explicitly reference only the BF16 diffusion model, BF16 text
+All four explicitly reference only the BF16 diffusion model, BF16 text
 encoder, and BF16 VAE. The edit workflow includes sample inputs; replace them
 with files uploaded through ComfyUI for normal use.
 
@@ -161,7 +164,34 @@ The novel-game workflow uses the tested production-refined Japanese prompt at
 2752×1536, 40 steps, seed 44, and CFG 1. Its Diffusers comparison and visual
 review are in `NOVEL_GAME_16X9_TEST_2026-09-23.md`.
 
-## 7. Persistence and cleanup
+## 7. Use RunPod Comfy Manager
+
+RunPod Comfy Manager 0.20.4 includes two profiled workflows:
+
+- `qwen-image-2.1-bf16-t2i` v1
+- `qwen-image-2.1-bf16-edit` v1
+
+Install the built-ins once, submit a request Markdown, and watch the returned
+job ID:
+
+```bash
+rcmctl health --json
+rcmctl workflow-install-builtins --json
+rcmctl workflow qwen-image-2.1-bf16-t2i 1 --json
+rcmctl validate /absolute/path/request.md --json
+rcmctl submit /absolute/path/request.md --json
+rcmctl watch JOB_ID --json
+```
+
+Both workflows use model profile `qwen-image-2.1-official-bf16` and the same
+loader signature. Manager therefore does not call ComfyUI `/free` when moving
+between T2I and Edit. Image 0.1.3 also keeps those loader node outputs in the
+ComfyUI classic cache. The first request after a cold Pod start loads the model;
+later requests in that Pod process reuse it. Full Markdown examples, multi-image
+reference rules, verification commands, and the observed Manager smoke results
+are in [RUNPOD_COMFY_MANAGER.md](RUNPOD_COMFY_MANAGER.md).
+
+## 8. Persistence and cleanup
 
 Everything that must survive belongs below
 `/workspace/qwen-image-2.1-bf16`. The 40GB container disk is disposable.

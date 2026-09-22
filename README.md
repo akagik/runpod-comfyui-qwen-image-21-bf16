@@ -15,13 +15,17 @@ separate. It contains no model weights, quantization, LoRA, or custom ComfyUI no
 
 ## Pod template
 
-Template: `mzav9rhpen` (`Qwen Image 2.1 Official BF16 ComfyUI + Diffusers 0.1.2`).
-Image: `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.2@sha256:06ccef7c0797b550a3fbb1809adc7648a39c6188890bcd22d41c208231558c7a`.
+Template: `mzav9rhpen` (`Qwen Image 2.1 Official BF16 ComfyUI + Diffusers 0.1.3 Resident`).
+Image: `ghcr.io/akagik/runpod-comfyui-qwen-image-21-bf16:0.1.3@sha256:ec46236609a7e7ecea33904df0a043a1b529d77ad52eb8c7f0b1d1250cdc5e9b`.
 `Dockerfile` builds the full 0.1.0 image; `Dockerfile.patch` pins that verified digest
 and adds the 0.1.1 persistent-volume guard without reinstalling dependencies.
 `Dockerfile.novel` pins the verified 0.1.1 image and adds only the tested 16:9
 script and ComfyUI preset. It does not change the CUDA, Python, PyTorch,
 Diffusers, ComfyUI, or model bootstrap layers.
+`Dockerfile.resident` pins the verified 0.1.2 image and replaces only the start
+script. Version 0.1.3 uses ComfyUI `--cache-classic`, so loader outputs remain
+cached between RunPod Comfy Manager jobs instead of being discarded after every
+prompt.
 Container disk: 40 GB. Ports: `8188/http`, `22/tcp`. Persistent network volume mount: `/workspace`.
 Environment: `MODE_TO_RUN=pod`, `RUNPOD_VOLUME_ROOT=/workspace`, `QWEN_MODEL_AUTO_DOWNLOAD=1`.
 Allowed host CUDA versions: 13.0 and 13.2. The full baseline was verified on an
@@ -34,7 +38,13 @@ The entrypoint starts SSH, records `nvidia-smi`, Python, disk, RAM, and torch/CU
 `/workspace/qwen-image-2.1-bf16/logs/`, downloads only the three Comfy-Org BF16 files
 into a dedicated directory, then starts ComfyUI on port 8188. The persistent Hugging Face
 cache is `/workspace/qwen-image-2.1-bf16/hf-cache`. Existing models and workflows elsewhere
-on the volume are never overwritten. Restarting a Pod reuses the cache.
+on the volume are never overwritten. Restarting a Pod reuses the cache. During one
+Pod process, ComfyUI keeps the BF16 loader outputs resident until a different model
+profile explicitly releases them or memory pressure requires eviction.
+
+For Markdown submission, T2I/Edit switching, multi-image reference input, output
+collection, and the resident-model rules in RunPod Comfy Manager, read
+[RUNPOD_COMFY_MANAGER.md](RUNPOD_COMFY_MANAGER.md).
 
 ## Manual ComfyUI workflows
 
@@ -45,7 +55,7 @@ Open the Pod's ComfyUI proxy URL, then select one of these from **Workflows**:
 3. `qwen21_bf16_novel_game_16x9_40step.json` — 2752×1536, 40 steps, seed 44, with the tested Japanese cat-cafe visual-novel prompt.
 4. `qwen21_bf16_image_edit_40step.json` — 40-step two-image edit with bundled sample inputs; replace the Load Image selections to use your own files.
 
-All three use only `qwen_image_2.1_bf16.safetensors`, `qwen3vl_8b_bf16.safetensors`,
+All four use only `qwen_image_2.1_bf16.safetensors`, `qwen3vl_8b_bf16.safetensors`,
 and `qwen_image_2.1_vae_bf16.safetensors`. The edit workflow's examples load into
 `/workspace/qwen-image-2.1-bf16/input`. ComfyUI outputs persist in
 `/workspace/qwen-image-2.1-bf16/outputs`.
